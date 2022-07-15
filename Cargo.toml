@@ -11,7 +11,7 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0"
 itertools = "0.10.3"
-policy-evaluator = { git = "https://github.com/kubewarden/policy-evaluator", tag = "v0.4.3" }
+policy-evaluator = { git = "https://github.com/kubewarden/policy-evaluator", tag = "v0.4.4" }
 base64 = "0.13.0"
 lazy_static = "1.4.0"
 clap = { version = "3.2.10", features = [ "cargo", "env" ] }
