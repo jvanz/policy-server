@@ -1,7 +1,9 @@
+use base64;
 use opentelemetry::metrics;
 use opentelemetry::sdk::metrics::PushController;
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::{ExportConfig, WithExportConfig};
+use std::string::String;
 
 mod policy_evaluations_total;
 pub use policy_evaluations_total::add_policy_evaluation;
@@ -32,6 +34,7 @@ pub struct PolicyEvaluation {
     pub(crate) accepted: bool,
     pub(crate) mutated: bool,
     pub(crate) error_code: Option<u16>,
+    pub(crate) patch: Option<String>,
 }
 
 #[allow(clippy::from_over_into)]
@@ -57,6 +60,21 @@ impl Into<Vec<KeyValue>> for &PolicyEvaluation {
         }
         if let Some(error_code) = self.error_code {
             baggage.append(&mut vec![KeyValue::new("error_code", error_code as i64)]);
+        }
+        if let Some(patch) = &self.patch {
+            let decoded_patch = match base64::decode(patch.clone()) {
+                Ok(patch_bytes) => match String::from_utf8(patch_bytes) {
+                    Ok(p) => p,
+                    Err(err) => {
+                        format!("cannot convert patch bytes into string: {err}")
+                    }
+                },
+                Err(err) => {
+                    format!("cannot decode JSON patch: {err}")
+                }
+            };
+
+            baggage.append(&mut vec![KeyValue::new("patch", decoded_patch)]);
         }
         baggage
     }

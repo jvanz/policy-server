@@ -270,6 +270,7 @@ impl Worker {
                             };
                         let accepted = vanilla_validation_response.allowed;
                         let mutated = vanilla_validation_response.patch.is_some();
+                        let patch = vanilla_validation_response.patch.clone();
                         let res = req.resp_chan.send(Some(validation_response));
                         let policy_evaluation = metrics::PolicyEvaluation {
                             policy_name,
@@ -281,6 +282,7 @@ impl Worker {
                             accepted,
                             mutated,
                             error_code,
+                            patch,
                         };
                         metrics::record_policy_latency(
                             policy_evaluation_duration,
