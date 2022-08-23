@@ -12,6 +12,16 @@ jobs:
     needs:
       - ci
     steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@main
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Generate SBOM
+        run: |
+          make sbom
+
       - name: Create release
         uses: actions/create-release@v1
         env:
@@ -21,3 +31,6 @@ jobs:
           release_name: Release policy-server ${{ github.ref }}
           draft: false
           prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') || contains(github.ref, '-rc') }}
+          files: |
+            target/_manifest/spdx_2.2/manifest.spdx.json
+            target/_manifest/spdx_2.2/manifest.spdx.json.sha256

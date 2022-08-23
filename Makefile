@@ -31,3 +31,11 @@ tag:
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.
 	docker build -t ${IMG} .
+
+sbom-tool:
+	curl -Lo sbom-tool https://github.com/microsoft/sbom-tool/releases/download/v0.1.13/sbom-tool-linux-x64
+	chmod +x sbom-tool
+
+.PHONY: sbom
+sbom: sbom-tool
+	./sbom-tool generate -b ./target/release -D true -bc . -pn policy-server -pv 1.0.0 -nsb https://kubewarden.io -nsu policy-server -V Verbose
