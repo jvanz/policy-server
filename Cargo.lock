@@ -399,8 +399,8 @@ checksum = "572f695136211188308f16ad2ca5c851a712c464060ae6974944458eb83880ba"
 
 [[package]]
 name = "burrego"
-version = "0.3.1"
-source = "git+https://github.com/kubewarden/policy-evaluator?tag=v0.6.0#cd12318c42a320b673ce840276b176adab4030b2"
+version = "0.3.3"
+source = "git+https://github.com/kubewarden/policy-evaluator?tag=v0.6.3#c417afdb38a96acbd9940b32c200164c1b689226"
 dependencies = [
  "base64 0.21.0",
  "chrono",
@@ -414,7 +414,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
- "serde_yaml 0.9.16",
+ "serde_yaml 0.9.17",
  "thiserror",
  "tracing",
  "tracing-subscriber",
@@ -2185,7 +2185,7 @@ dependencies = [
  "num-traits",
  "serde",
  "serde_json",
- "serde_yaml 0.9.16",
+ "serde_yaml 0.9.17",
  "slog",
  "url",
  "wapc-guest",
@@ -3134,8 +3134,8 @@ checksum = "6ac9a59f73473f1b8d852421e59e64809f025994837ef743615c6d0c5b305160"
 
 [[package]]
 name = "policy-evaluator"
-version = "0.6.0"
-source = "git+https://github.com/kubewarden/policy-evaluator?tag=v0.6.0#cd12318c42a320b673ce840276b176adab4030b2"
+version = "0.6.3"
+source = "git+https://github.com/kubewarden/policy-evaluator?tag=v0.6.3#c417afdb38a96acbd9940b32c200164c1b689226"
 dependencies = [
  "anyhow",
  "base64 0.21.0",
@@ -3160,20 +3160,20 @@ dependencies = [
  "url",
  "validator",
  "wapc",
- "wasmparser 0.96.0",
+ "wasmparser 0.99.0",
  "wasmtime-provider",
 ]
 
 [[package]]
 name = "policy-fetcher"
-version = "0.7.17"
-source = "git+https://github.com/kubewarden/policy-fetcher?tag=v0.7.17#b9f917bde0cae115260a19aabeab286afc02891a"
+version = "0.7.18"
+source = "git+https://github.com/kubewarden/policy-fetcher?tag=v0.7.18#1aac1abadf79de197bd09e234066413d1b2da594"
 dependencies = [
  "anyhow",
  "async-std",
  "async-stream",
  "async-trait",
- "base64 0.20.0",
+ "base64 0.21.0",
  "directories",
  "docker_credential",
  "lazy_static",
@@ -3185,7 +3185,7 @@ dependencies = [
  "rustls",
  "serde",
  "serde_json",
- "serde_yaml 0.9.16",
+ "serde_yaml 0.9.17",
  "sha2 0.10.6",
  "sigstore",
  "tokio",
@@ -3212,7 +3212,7 @@ dependencies = [
  "rstest",
  "serde",
  "serde_json",
- "serde_yaml 0.9.16",
+ "serde_yaml 0.9.17",
  "tempfile",
  "tokio",
  "tracing",
@@ -3872,9 +3872,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.91"
+version = "1.0.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "877c235533714907a8c2464236f5c4b2a17262ef1bd71f38f35ea592c8da6883"
+checksum = "cad406b69c91885b5107daf2c29572f6c8cdb3c66826821e286c533490c0bc76"
 dependencies = [
  "indexmap",
  "itoa",
@@ -3926,9 +3926,9 @@ dependencies = [
 
 [[package]]
 name = "serde_yaml"
-version = "0.9.16"
+version = "0.9.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92b5b431e8907b50339b51223b97d102db8d987ced36f6e4d03621db9316c834"
+checksum = "8fb06d4b6cdaef0e0c51fa881acb721bed3c924cfaa71d9c94a3b771dfdf6567"
 dependencies = [
  "indexmap",
  "itoa",
@@ -5053,9 +5053,9 @@ dependencies = [
 
 [[package]]
 name = "wasmparser"
-version = "0.96.0"
+version = "0.99.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "adde01ade41ab9a5d10ec8ed0bb954238cf8625b5cd5a13093d6de2ad9c2be1a"
+checksum = "9ef3b717afc67f848f412d4f02c127dd3e35a0eecd58c684580414df4fde01d3"
 dependencies = [
  "indexmap",
  "url",
