@@ -61,6 +61,7 @@ mod filters {
             .and(warp::body::json())
             .and(warp::any().map(move || api_tx.clone()))
             .and_then(crate::api::audit)
+            .with(warp::log("audit-log"))
     }
 
     fn readiness() -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
