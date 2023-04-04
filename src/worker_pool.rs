@@ -8,6 +8,7 @@ use policy_evaluator::{
     wasmtime,
 };
 use rayon::prelude::*;
+use semver::{Prerelease, Version, VersionReq};
 use std::{
     collections::HashMap,
     fs,
@@ -46,12 +47,39 @@ pub(crate) struct PrecompiledPolicy {
     pub execution_mode: PolicyExecutionMode,
 }
 
+/// Check if policy server version is compatible with  minimum kubewarden
+/// version required by the policy
+fn has_minimum_kubewarden_version(metadata: &Metadata) -> Result<()> {
+    if let Some(mut minimum_kubewarden_version) = metadata.minimum_kubewarden_version.clone() {
+        let mut kubewarden_version = Version::parse(env!("CARGO_PKG_VERSION")).ok().unwrap();
+        // the prerelease is removed because semver is not able to handle comparison
+        // like 1.6.0-rc4 < 1.7.0-rc4.
+        minimum_kubewarden_version.pre = Prerelease::EMPTY;
+        kubewarden_version.pre = Prerelease::EMPTY;
+        let version_requirements =
+            VersionReq::parse(format!("<{}", minimum_kubewarden_version).as_str())
+                .ok()
+                .unwrap();
+        if version_requirements.matches(&kubewarden_version) {
+            return Err(anyhow!(
+                "Policy required Kubewarden version {} but is running on {}",
+                minimum_kubewarden_version,
+                kubewarden_version.to_string(),
+            ));
+        }
+    }
+    Ok(())
+}
+
 impl PrecompiledPolicy {
     /// Load a WebAssembly module from the disk and compiles it
     fn new(engine: &wasmtime::Engine, wasm_module_path: &Path) -> Result<Self> {
         let policy_contents = fs::read(wasm_module_path)?;
         let policy_metadata = Metadata::from_contents(&policy_contents)?;
-        let execution_mode = policy_metadata.unwrap_or_default().execution_mode;
+        let metadata = policy_metadata.unwrap_or_default();
+        let execution_mode = metadata.execution_mode;
+        has_minimum_kubewarden_version(&metadata)?;
+
         let precompiled_module = engine.precompile_module(&policy_contents)?;
 
         Ok(Self {
@@ -430,5 +458,80 @@ fn verify_policy_settings(
         Ok(())
     } else {
         Err(anyhow!("{}", errors.join(", ")))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use semver::{Version, VersionReq};
+    use std::env;
+
+    #[test]
+    fn validate_usage_of_semver_version_req() {
+        let version_requirements = VersionReq::parse(">=1.6.0").ok().unwrap();
+        let old_version = Version::parse("1.5.9").ok().unwrap();
+        let later_version = Version::parse("1.6.1").ok().unwrap();
+        assert!(version_requirements.matches(&later_version));
+        assert_eq!(version_requirements.matches(&old_version), false);
+    }
+
+    #[test]
+    fn validate_usage_of_semver_version_with_release_candidate() {
+        let version_requirements = VersionReq::parse(">=1.7.0-rc2").ok().unwrap();
+        let old_version = Version::parse("1.7.0-rc1").ok().unwrap();
+        let later_version = Version::parse("1.7.0-rc3").ok().unwrap();
+        assert!(version_requirements.matches(&later_version));
+        assert_eq!(version_requirements.matches(&old_version), false);
+    }
+
+    #[test]
+    fn validate_usage_of_semver_version_with_release_candidate_between_minor_releases() {
+        let version_requirements = VersionReq::parse("<1.7.0-rc4").ok().unwrap();
+        let version = Version::parse("1.6.0-rc4").ok().unwrap();
+        // it seems a bug in semver
+        assert_eq!(version_requirements.matches(&version), false);
+    }
+
+    #[test]
+    fn validate_version_string_conversion_test() {
+        let minimum_kubewarden_version = Version::parse("1.6.0").ok().unwrap();
+        assert_eq!("1.6.0", format!("{}", minimum_kubewarden_version));
+        assert_eq!("<1.6.0", format!("<{}", minimum_kubewarden_version));
+        let kubewarden_version = Version::parse(env!("CARGO_PKG_VERSION")).ok().unwrap();
+        assert_eq!(env!("CARGO_PKG_VERSION"), format!("{}", kubewarden_version));
+    }
+
+    #[test]
+    fn valid_kubewarden_version_test() {
+        let kubewarden_version = Version::parse(env!("CARGO_PKG_VERSION")).ok().unwrap();
+        let mut minimum_kubewarden_version = kubewarden_version.clone();
+        minimum_kubewarden_version.minor -= 1;
+        let metadata = Metadata {
+            minimum_kubewarden_version: Some(minimum_kubewarden_version),
+            ..Default::default()
+        };
+        assert!(has_minimum_kubewarden_version(&metadata).is_ok())
+    }
+
+    #[test]
+    fn no_mininum_kubewarden_version_is_valid_test() {
+        let metadata = Metadata {
+            minimum_kubewarden_version: None,
+            ..Default::default()
+        };
+        assert!(has_minimum_kubewarden_version(&metadata).is_ok())
+    }
+
+    #[test]
+    fn invalid_kubewarden_version_test() {
+        let kubewarden_version = Version::parse(env!("CARGO_PKG_VERSION")).ok().unwrap();
+        let mut minimum_kubewarden_version = kubewarden_version.clone();
+        minimum_kubewarden_version.minor += 1;
+        let metadata = Metadata {
+            minimum_kubewarden_version: Some(minimum_kubewarden_version),
+            ..Default::default()
+        };
+        assert!(has_minimum_kubewarden_version(&metadata).is_err())
     }
 }

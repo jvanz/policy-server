@@ -418,7 +418,7 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 [[package]]
 name = "burrego"
 version = "0.3.4"
-source = "git+https://github.com/kubewarden/policy-evaluator?tag=v0.9.2#3752c5b0462a6c4ea631deb42a69c651b0e0cee1"
+source = "git+https://github.com/jvanz/policy-evaluator?branch=minimum_kubewarden_version_field#dccbdaf880488004b3d3dfb1bd886d448ae3c985"
 dependencies = [
  "base64 0.21.0",
  "chrono",
@@ -3166,7 +3166,7 @@ checksum = "6ac9a59f73473f1b8d852421e59e64809f025994837ef743615c6d0c5b305160"
 [[package]]
 name = "policy-evaluator"
 version = "0.9.2"
-source = "git+https://github.com/kubewarden/policy-evaluator?tag=v0.9.2#3752c5b0462a6c4ea631deb42a69c651b0e0cee1"
+source = "git+https://github.com/jvanz/policy-evaluator?branch=minimum_kubewarden_version_field#dccbdaf880488004b3d3dfb1bd886d448ae3c985"
 dependencies = [
  "anyhow",
  "base64 0.21.0",
@@ -3247,6 +3247,7 @@ dependencies = [
  "policy-evaluator",
  "rayon",
  "rstest",
+ "semver",
  "serde",
  "serde_json",
  "serde_yaml 0.9.19",
@@ -3880,9 +3881,9 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.158"
+version = "1.0.159"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "771d4d9c4163ee138805e12c710dd365e4f44be8be0503cb1bb9eb989425d9c9"
+checksum = "3c04e8343c3daeec41f58990b9d77068df31209f2af111e059e9fe9646693065"
 dependencies = [
  "serde_derive",
 ]
@@ -3908,9 +3909,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.158"
+version = "1.0.159"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e801c1712f48475582b7696ac71e0ca34ebb30e09338425384269d9717c62cad"
+checksum = "4c614d17805b093df4b147b51339e7e44bf05ef59fba1e45d83500bcfb4d8585"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3919,9 +3920,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.94"
+version = "1.0.95"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c533a59c9d8a93a09c6ab31f0fd5e5f4dd1b8fc9434804029839884765d04ea"
+checksum = "d721eca97ac802aa7777b701877c8004d950fc142651367300d21c1cc0194744"
 dependencies = [
  "indexmap",
  "itoa",
