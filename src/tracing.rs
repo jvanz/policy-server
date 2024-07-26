@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Result};
-use opentelemetry::trace::TracerProvider;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{fmt, EnvFilter};
 
@@ -39,17 +38,16 @@ pub fn setup_tracing(log_level: &str, log_fmt: &str, log_no_color: bool) -> Resu
             // OpenTelemetry collector using the OTLP format.
             // The collector must run on localhost (eg: use a sidecar inside of k8s)
             // using GRPC
-            let tracer_provider = opentelemetry_otlp::new_pipeline()
+            let tracer = opentelemetry_otlp::new_pipeline()
                 .tracing()
                 .with_exporter(opentelemetry_otlp::new_exporter().tonic())
-                .with_trace_config(opentelemetry_sdk::trace::Config::default().with_resource(
+                .with_trace_config(opentelemetry_sdk::trace::config().with_resource(
                     opentelemetry_sdk::Resource::new(vec![opentelemetry::KeyValue::new(
                         "service.name",
                         config::SERVICE_NAME,
                     )]),
                 ))
                 .install_batch(opentelemetry_sdk::runtime::Tokio)?;
-            let tracer = tracer_provider.tracer(config::SERVICE_NAME);
 
             // Create a tracing layer with the configured tracer
             let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
