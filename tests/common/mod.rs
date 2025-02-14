@@ -104,9 +104,10 @@ pub(crate) fn default_test_config() -> Config {
         ),
     ]);
 
+    let (addr, readiness_probe_addr) = get_available_addresses_with_ports();
     Config {
-        addr: get_available_address_with_port(),
-        readiness_probe_addr: get_available_address_with_port(),
+        addr,
+        readiness_probe_addr,
         sources: None,
         policies,
         policies_download_dir: tempdir().unwrap().into_path(),
@@ -132,11 +133,17 @@ pub(crate) fn default_test_config() -> Config {
 
 /// Returns a random adress with an available port to use with policy server. Therefore, we can
 /// have multiple policy server running at the same time in async tests
-fn get_available_address_with_port() -> SocketAddr {
-    TcpListener::bind(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 0))
-        .expect("failed to bind to available port")
-        .local_addr()
-        .expect("failed to get local address")
+fn get_available_addresses_with_ports() -> (SocketAddr, SocketAddr) {
+    (
+        TcpListener::bind(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 0))
+            .expect("failed to bind to available port")
+            .local_addr()
+            .expect("failed to get local address"),
+        TcpListener::bind(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 0))
+            .expect("failed to bind to available port")
+            .local_addr()
+            .expect("failed to get local address"),
+    )
 }
 
 pub(crate) async fn app(config: Config) -> Router {
