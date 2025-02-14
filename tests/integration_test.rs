@@ -970,6 +970,7 @@ async fn parse_exporter_output(
     reader
         .read_line(&mut exporter_output)
         .expect("failed to read exporter output");
+    println!("exporter_output: {}", exporter_output.clone());
 
     serde_json::from_str(&exporter_output)
 }
