@@ -291,11 +291,13 @@ impl PolicyServer {
     }
 }
 
-async fn load_server_cert_and_key(
-    cert_file: String,
-    key_file: String,
-) -> Result<(Vec<CertificateDer<'static>>, PrivateKeyDer<'static>)> {
-    let cert_reader = &mut BufReader::new(File::open(cert_file)?);
+/// Load the ServerConfig to be used by the Policy Server configuring the server
+/// certificate and mTLS when necessary
+///
+/// RustlsConfig does not offer a function to load the client CA certificate together with the
+/// service certificates. Therefore, we need to load everything and build the ServerConfig
+async fn build_tls_server_config(tls_config: &TlsConfig) -> Result<rustls::ServerConfig> {
+    let cert_reader = &mut BufReader::new(File::open(tls_config.cert_file.clone())?);
     let cert: Vec<CertificateDer> = rustls_pemfile::certs(cert_reader)
         .filter_map(|it| {
             if let Err(ref e) = it {
@@ -309,7 +311,7 @@ async fn load_server_cert_and_key(
         return Err(anyhow!("Multiple certificates provided in cert file"));
     }
 
-    let key_file_reader = &mut BufReader::new(File::open(key_file)?);
+    let key_file_reader = &mut BufReader::new(File::open(tls_config.key_file.clone())?);
     let mut key_vec: Vec<Vec<u8>> = rustls_pemfile::read_all(key_file_reader)
         .filter_map(|i| match i.ok()? {
             Item::Sec1Key(key) => Some(key.secret_sec1_der().to_vec()),
@@ -330,15 +332,16 @@ async fn load_server_cert_and_key(
     let key = PrivateKeyDer::try_from(key_vec.pop().unwrap())
         .map_err(|e| anyhow!("Cannot parse server key: {e}"))?;
 
-    Ok((cert, key))
-}
+    if tls_config.client_ca_file.is_empty() {
+        return Ok(ServerConfig::builder()
+            .with_no_client_auth()
+            .with_single_cert(cert, key)?);
+    }
 
-async fn load_client_cas(
-    client_cas: Vec<std::path::PathBuf>,
-) -> Result<Arc<dyn rustls::server::danger::ClientCertVerifier>> {
     let mut store = RootCertStore::empty();
+
     //mTLS enabled
-    for client_ca_file in client_cas {
+    for client_ca_file in tls_config.client_ca_file.clone() {
         // we have the client CA. Therefore, we should enable mTLS.
         let client_ca_reader = &mut BufReader::new(File::open(client_ca_file)?);
 
@@ -357,27 +360,7 @@ async fn load_client_cas(
             "Loaded client CA certificates"
         );
     }
-    WebPkiClientVerifier::builder(Arc::new(store))
-        .build()
-        .map_err(|e| anyhow!("Cannot build client verifier: {e}"))
-}
-
-/// Load the ServerConfig to be used by the Policy Server configuring the server
-/// certificate and mTLS when necessary
-///
-/// RustlsConfig does not offer a function to load the client CA certificate together with the
-/// service certificates. Therefore, we need to load everything and build the ServerConfig
-async fn build_tls_server_config(tls_config: &TlsConfig) -> Result<rustls::ServerConfig> {
-    let (cert, key) =
-        load_server_cert_and_key(tls_config.cert_file.clone(), tls_config.key_file.clone()).await?;
-
-    if tls_config.client_ca_file.is_empty() {
-        return Ok(ServerConfig::builder()
-            .with_no_client_auth()
-            .with_single_cert(cert, key)?);
-    }
-
-    let client_verifier = load_client_cas(tls_config.client_ca_file.clone()).await?;
+    let client_verifier = WebPkiClientVerifier::builder(Arc::new(store)).build()?;
     Ok(ServerConfig::builder()
         .with_client_cert_verifier(client_verifier)
         .with_single_cert(cert, key)?)
