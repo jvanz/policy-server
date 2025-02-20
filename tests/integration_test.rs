@@ -934,11 +934,18 @@ async fn test_otel() {
         .with_max_delay(Duration::from_secs(30))
         .with_max_times(5);
 
-    let metrics_output_json =
-        (|| async { parse_exporter_output(metrics_output_file.as_file()).await })
-            .retry(exponential_backoff)
-            .await
-            .unwrap();
+    let metrics_output_json = (|| async {
+        let out =
+            String::from_utf8(otelc.stdout_to_vec().await.expect("failed to get stdout")).unwrap();
+        println!("otelc stdout: {}", out);
+        let err =
+            String::from_utf8(otelc.stderr_to_vec().await.expect("failed to get stderr")).unwrap();
+        println!("otelc stderr: {}", err);
+        parse_exporter_output(metrics_output_file.as_file()).await
+    })
+    .retry(exponential_backoff)
+    .await
+    .unwrap();
     let metrics = &metrics_output_json["resourceMetrics"][0]["scopeMetrics"][0];
     assert_eq!(metrics["scope"]["name"], "kubewarden");
     assert!(
