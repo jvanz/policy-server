@@ -17,14 +17,15 @@ exporters:
     path: /tmp/metrics.json
   file/traces:
     path: /tmp/traces.json
+  debug:
 
 service:
   pipelines:
     metrics:
       receivers: [otlp]
       processors: []
-      exporters: [file/metrics]
+      exporters: [debug, file/metrics]
     traces:
       receivers: [otlp]
       processors: []
-      exporters: [file/traces]
+      exporters: [debug, file/traces]
