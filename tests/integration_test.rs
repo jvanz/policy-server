@@ -904,11 +904,11 @@ async fn test_otel() {
         "OTEL_EXPORTER_OTLP_CLIENT_KEY",
         client_key_file.path().to_str().unwrap(),
     );
-    std::env::set_var("OTEL_METRIC_EXPORT_INTERVAL", "1");
 
     let mut config = default_test_config();
     config.metrics_enabled = true;
     config.log_fmt = "otlp".to_string();
+    config.log_level = "trace".to_string();
 
     setup_metrics().unwrap();
     setup_tracing(&config.log_level, &config.log_fmt, config.log_no_color).unwrap();
