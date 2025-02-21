@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use anyhow::Result;
 use opentelemetry::{global, KeyValue};
 use opentelemetry_otlp::{ExportConfig, WithExportConfig, WithTonicConfig};
@@ -18,8 +20,9 @@ pub fn setup_metrics() -> Result<()> {
         .with_export_config(ExportConfig::default())
         .build()?;
 
-    let periodic_reader =
-        opentelemetry_sdk::metrics::PeriodicReader::builder(metric_exporter).build();
+    let periodic_reader = opentelemetry_sdk::metrics::PeriodicReader::builder(metric_exporter)
+        .with_interval(Duration::from_secs(1))
+        .build();
     let meter_provider = opentelemetry_sdk::metrics::SdkMeterProvider::builder()
         .with_reader(periodic_reader)
         .build();
