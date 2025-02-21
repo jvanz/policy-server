@@ -21,7 +21,7 @@ pub fn setup_metrics() -> Result<()> {
         .build()?;
 
     let periodic_reader = opentelemetry_sdk::metrics::PeriodicReader::builder(metric_exporter)
-        .with_interval(Duration::from_secs(1))
+        .with_interval(Duration::from_secs(10))
         .build();
     let meter_provider = opentelemetry_sdk::metrics::SdkMeterProvider::builder()
         .with_reader(periodic_reader)

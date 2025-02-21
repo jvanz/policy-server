@@ -908,24 +908,26 @@ async fn test_otel() {
     let mut config = default_test_config();
     config.metrics_enabled = true;
     config.log_fmt = "otlp".to_string();
-    config.log_level = "trace".to_string();
+    config.log_level = "debug".to_string();
 
     setup_metrics().unwrap();
     setup_tracing(&config.log_level, &config.log_fmt, config.log_no_color).unwrap();
 
     let app = app(config).await;
 
-    // one succesful request
-    let request = Request::builder()
-        .method(http::Method::POST)
-        .header(header::CONTENT_TYPE, "application/json")
-        .uri("/validate/pod-privileged")
-        .body(Body::from(include_str!(
-            "data/pod_without_privileged_containers.json"
-        )))
-        .unwrap();
-    let response = app.oneshot(request).await.unwrap();
-    assert_eq!(response.status(), 200);
+    // some succesful request
+    for _ in 0..5 {
+        let request = Request::builder()
+            .method(http::Method::POST)
+            .header(header::CONTENT_TYPE, "application/json")
+            .uri("/validate/pod-privileged")
+            .body(Body::from(include_str!(
+                "data/pod_without_privileged_containers.json"
+            )))
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), 200);
+    }
 
     let exponential_backoff = ExponentialBuilder::default()
         .with_min_delay(Duration::from_secs(10))
