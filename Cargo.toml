@@ -62,7 +62,7 @@ tikv-jemallocator = { version = "0.6.0", features = [
   "profiling",
   "unprefixed_malloc_on_supported_platforms",
 ] }
-tokio = { version = "^1.43.0", features = ["full"] }
+tokio = { version = "^1.43.1", features = ["full"] }
 tonic = { version = "0.12.3" }
 tower-http = { version = "0.6.1", features = ["trace"] }
 tracing = "0.1"
